@@ -1,0 +1,45 @@
+name: ML Pipeline CI/CD
+
+on:
+  push:
+    branches: [ main]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  ml-pipeline:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Instalar dependencias
+      run: make install
+    
+    - name: Ejecutar linting
+      run: make lint
+      continue-on-error: true
+    
+    - name: Ejecutar tests
+      run: make test
+    
+    - name: Entrenar modelo
+      run: make train
+    
+    - name: Guardar modelo como artefacto
+      uses: actions/upload-artifact@v3
+      with:
+        name: ml-model
+        path: mlruns/
+        retention-days: 30
+    
+    - name: Resumen de ejecución
+      run: |
+        echo "Pipeline ejecutado exitosamente"
